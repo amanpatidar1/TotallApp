@@ -185,7 +185,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   logOutVw: {
-    position: "absolute",
     width: width,
     alignItems: "flex-end",
     paddingRight: 15,
@@ -197,11 +196,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 11,
+      height: 15,
     },
     shadowOpacity: 0.55,
     shadowRadius: 14.78,
-    elevation: 14,
+    elevation: 20,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
@@ -261,6 +260,26 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
     fontSize: 18,
+  },
+  wrongTxt: {
+    color: "#00a4bf",
+    fontSize: 20,
+    textAlign: "center",
+    marginVertical: 5,
+  },
+  notAnswerVw: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    paddingVertical: 5,
+  },
+  okBttn: {
+    alignItems: "center",
+    marginTop: "5%",
+    backgroundColor: "#00a4bf",
+    width: 80,
+    borderRadius: 18,
+    paddingVertical: 5,
   },
 });
 export default styles;
