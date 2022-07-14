@@ -5,11 +5,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "row",
   },
   splashImg: {
-    right: 20,
-    height: 20,
-    width: 20,
+    // right: 20,
+    height: 135,
+    width: 135,
   },
   mainDiv: {
     flex: 1,
@@ -25,7 +26,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
-    height: "100%",
+    bottom: 0,
+    right: 0,
   },
   headerVw: {
     paddingTop: 19,
@@ -99,18 +101,19 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   answerVw: {
-    flex: 3,
-    paddingLeft: 2,
-    paddingRight: 5,
+    flex: 1,
+    // paddingLeft: 2,
+    // paddingRight: 5,
     justifyContent: "center",
     alignItems: "center",
+    alignSelf: "center",
     position: "absolute",
-    bottom: 70,
+    bottom: 75,
     marginTop: 10,
   },
   answerOptTxt: {
     fontWeight: "bold",
-    fontSize: 19,
+    fontSize: 30,
     textAlign: "center",
     color: "#ffffff",
     padding: 15,
@@ -118,16 +121,17 @@ const styles = StyleSheet.create({
   submitBttn: {
     width: width,
     position: "absolute", //Here is the trick
-    bottom: 0,
+    bottom: 10,
   },
   loginVw: {
     flex: 2,
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "row",
   },
   logoimg: {
-    width: 150,
-    height: 150,
+    width: 135,
+    height: 135,
   },
   container: {
     marginBottom: 20,
@@ -183,6 +187,7 @@ const styles = StyleSheet.create({
   opinionTxt: {
     fontSize: 19,
     fontWeight: "bold",
+    color: "#00a4bf",
   },
   logOutVw: {
     width: width,
@@ -260,6 +265,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
     fontSize: 18,
+    fontWeight: "bold",
   },
   wrongTxt: {
     color: "#00a4bf",

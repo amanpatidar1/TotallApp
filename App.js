@@ -110,7 +110,7 @@ function ResultView({ viewResult, onLogout }) {
 function Splash({ navigation }) {
   const animatedValue = new Animated.Value(0);
   useEffect(() => {
-    handleAnimation();
+    // handleAnimation();
     navigateToHome();
   }, []);
   const handleAnimation = () => {
@@ -128,40 +128,15 @@ function Splash({ navigation }) {
   }
   return (
     <View style={styles.splashVw}>
-      <Animated.Image
+      <Image
         resizeMode="contain"
         source={require("./app/assets/Totall.png")}
-        style={[
-          styles.splashImg,
-          {
-            transform: [
-              {
-                translateX: animatedValue.interpolate({
-                  inputRange: [0, 0],
-                  outputRange: [0, 20],
-                }),
-              },
-              {
-                translateY: animatedValue.interpolate({
-                  inputRange: [0, 0],
-                  outputRange: [0, 0],
-                }),
-              },
-              {
-                scaleX: animatedValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 12],
-                }),
-              },
-              {
-                scaleY: animatedValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 12.5],
-                }),
-              },
-            ],
-          },
-        ]}
+        style={[styles.splashImg]}
+      />
+      <Image
+        resizeMode="contain"
+        source={require("./app/assets/Sandeepan.png")}
+        style={[styles.splashImg]}
       />
     </View>
   );
@@ -178,7 +153,6 @@ function Home() {
   const [lectureOtp, setLectureOtp] = useState("");
   const [response, setResponse] = useState("");
   const [currentCount, setCount] = useState(0);
-  console.log("currentCount: ", currentCount);
   const [questionsSbmt, setQuestionsSbmt] = useState(false);
   const [showRight, setShowRight] = useState(false);
   const [answer, setAnswer] = useState("");
@@ -189,10 +163,10 @@ function Home() {
   const [loading, setIsLoading] = useState(false);
   const [selectAns, setSelectAns] = useState("");
   const [countWork, setCountDown] = useState(false);
-  // const timer = () => setCount(currentCount - 1);
   const [viewResult, setViewResult] = useState(null);
   const playbackState = usePlaybackState();
   const stateRef = useRef();
+  let setTimer = null;
   stateRef.current = userData;
   const appState = useRef(AppState.currentState);
   const backAction = () => {
@@ -207,7 +181,7 @@ function Home() {
   };
   const _handleAppStateChange = (nextAppState) => {
     if (
-      appState.current.match(/inactive|background/) &&
+      // appState.current.match(/inactive|background/) &&
       nextAppState === "active"
     ) {
       console.log("App has come to the foreground!");
@@ -233,7 +207,7 @@ function Home() {
     return () => {
       AppState.removeEventListener("change", _handleAppStateChange);
     };
-  }, []);
+  }, [AppState]);
 
   useEffect(() => {
     // AsyncStorage.getItem('userDetails').then((token) => {
@@ -280,15 +254,24 @@ function Home() {
   async function handleAnswer(val) {
     setAnswer(val);
   }
-
+  useEffect(() => {}, [showRight, questionsSbmt, answer, response]);
   useEffect(() => {
     socket.on("connect", function () {
       setIsConnect(false);
       console.log("socket  connect");
     });
     socket.on("sendtoMobileClient", async (data) => {
-      console.log("data:sendtoMobileClient ", data);
-      setCountDown(true);
+      console.log("dataSENDRRR: ", data);
+      // if (setTimer) {
+      //   // alert("STOP JJE")
+      //   // clearTimeout(setTimer);
+      //   setTimer = null;
+      //   console.log("setTimer: ", setTimer);
+      //   setShowRight(false);
+      //   setQuestionsSbmt(false);
+      //   setAnswer("");
+      //   setResponse("");
+      // }
       if (JSON.parse(data).lecture_id) {
         if (
           JSON.parse(data).user_data &&
@@ -301,10 +284,9 @@ function Home() {
           });
           if (JSON.parse(data).lecture_id === stateRef.current.lecture_id) {
             if (quesData.length) {
-              // setResponse('')
               // await togglePlay()
-              setShowRight(false);
               setAnswerSnd(false);
+              setShowRight(false);
               setQuestionsSbmt(false);
               setAnswer("");
               setResponse(JSON.parse(data));
@@ -325,9 +307,19 @@ function Home() {
       responseNull();
     });
   }, []);
-  function responseNull() {
+  const handleFinish = () => {
+    setCount(0);
+  };
+  function closeAlert() {
     setResponse("");
     setNoAnswer(false);
+  }
+  function responseNull() {
+    setTimer = setTimeout(() => {
+      setResponse("");
+      setShowRight(false);
+      setNoAnswer(false);
+    }, 3000);
   }
   function notAnswer() {
     if (response.user_data) {
@@ -434,6 +426,7 @@ function Home() {
         await AsyncStorage.removeItem("userToken");
         await AsyncStorage.removeItem("userDetails");
         setUserData("");
+        setResponse("");
         setIsLoading(false);
         setViewResult(null);
       } else {
@@ -477,6 +470,7 @@ function Home() {
         lecture_id: response.lecture_id,
       };
       socket.emit("sendtoserver", val);
+      setCount(0);
       setQuestionsSbmt(true);
       setAnswerSnd(true);
       answerSendFun();
@@ -486,7 +480,7 @@ function Home() {
       }
       // togglePause()
     } else {
-      showPopupAlert("Please select an option");
+      // showPopupAlert("Please select an option");
     }
   }
   const answerSendFun = () => {
@@ -502,6 +496,13 @@ function Home() {
       if (result.length > 0) {
         setViewResult(result);
         setAnswerSnd(false);
+      }
+    });
+  }, []);
+  useEffect(() => {
+    socket.on("userLogout", (data) => {
+      if (data) {
+        logout();
       }
     });
   }, []);
@@ -578,15 +579,14 @@ function Home() {
               response ? (
                 response.user_data ? (
                   <View style={{ flex: 1 }}>
-                    {console.log('currentCountTWOOWWW: ', currentCount)}
                     {currentCount === 0 || questionsSbmt == true ? null : (
                       <View>
                         <ActivityIndicator size={45} color="#00a4bf" />
                         <View style={styles.countTxt}>
                           <CountDown
                             until={currentCount}
-                            running={countWork}
-                            onFinish={() => setCount(0)}
+                            running={true}
+                            onFinish={() => handleFinish()}
                             size={13}
                             timeToShow={["S"]}
                             timeLabels={{}}
@@ -757,7 +757,7 @@ function Home() {
                                   key={index}
                                   onPress={() => handleAnswer(item)}
                                   style={{
-                                    width: deviceWidth / 2,
+                                    width: deviceWidth / 2.1,
                                     backgroundColor:
                                       answer === item
                                         ? "green"
@@ -766,6 +766,7 @@ function Home() {
                                         ? "green"
                                         : colors[index],
                                     margin: 3,
+                                    borderRadius: 8,
                                   }}
                                 >
                                   <Text style={styles.answerOptTxt}>
@@ -779,7 +780,12 @@ function Home() {
                         </View>
                         {currentCount === 0 || questionsSbmt == true ? null : (
                           <View style={styles.submitBttn}>
-                            <Button title="Submit" onPress={() => onSubmit()} />
+                            <Button
+                              title="Submit"
+                              style={{ width: "95%", borderRadius: 10 }}
+                              textStyle={{ fontSize: 30 }}
+                              onPress={() => onSubmit()}
+                            />
                           </View>
                         )}
                       </>
@@ -806,6 +812,11 @@ function Home() {
                     resizeMode="contain"
                     style={styles.logoimg}
                     source={require("./app/assets/Totall.png")}
+                  />
+                  <Image
+                    resizeMode="contain"
+                    style={styles.logoimg}
+                    source={require("./app/assets/Sandeepan.png")}
                   />
                 </View>
                 <View style={styles.loginCon}>
@@ -925,7 +936,7 @@ function Home() {
                 </View>
               </DialogContent>
             </Dialog>
-            {/* <Dialog
+            <Dialog
               visible={answerSnd}
               // onTouchOutside={() => {
               //   set
@@ -933,15 +944,15 @@ function Home() {
               height={0.1}
               width={0.5}
             >
-              <DialogContent style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-                <View style={{ marginVertical: 5 }}>
+              <DialogContent style={{ backgroundColor: "#8ac575" }}>
+                <View style={{ marginVertical: 15 }}>
                   <Text style={styles.answerSndTxt}>
                     Your answer is Submitted
                   </Text>
                 </View>
               </DialogContent>
-            </Dialog> */}
-            <Dialog
+            </Dialog>
+            {/* <Dialog
               visible={noAnswer}
               // onTouchOutside={() => {
               //   set
@@ -957,13 +968,13 @@ function Home() {
                   </Text>
                 </View>
                 <TouchableOpacity
-                  onPress={() => responseNull()}
+                  onPress={() => closeAlert()}
                   style={styles.okBttn}
                 >
                   <Text style={{ color: "#fff", fontSize: 18 }}>Ok</Text>
                 </TouchableOpacity>
               </DialogContent>
-            </Dialog>
+            </Dialog> */}
           </View>
         </ScrollView>
       )}

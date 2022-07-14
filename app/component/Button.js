@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import PropTypes from "prop-types";
 import {
   View,
@@ -6,31 +6,40 @@ import {
   Image,
   TouchableOpacity,
   TouchableHighlight,
-} from 'react-native';
+} from "react-native";
 
-const Button = ({ title, onPress, }) => {
+const Button = (props) => {
+  const { title, onPress, style, textStyle } = props;
   return (
     <TouchableOpacity
       onPress={() => onPress()}
-      style={{
-        height: 60,
-        width: "100%",
-        alignSelf: "center",
-        // borderRadius: 10,
-        backgroundColor: "#00a4bf",
-        marginTop: 24,
-        justifyContent: "center",
-      }}>
-      <Text style={{
-        alignSelf: "center",
-        color: "#ffffff",
-        fontSize: 22,
-      }}>
+      style={[
+        {
+          height: 60,
+          width: "100%",
+          alignSelf: "center",
+          backgroundColor: "#00a4bf",
+          marginTop: 24,
+          justifyContent: "center",
+        },
+        style,
+      ]}
+    >
+      <Text
+        style={[
+          {
+            alignSelf: "center",
+            color: "#ffffff",
+            fontSize: 21,
+          },
+          textStyle,
+        ]}
+      >
         {title}
       </Text>
     </TouchableOpacity>
   );
-}
+};
 Button.propTypes = {
   onPress: PropTypes.func,
   title: PropTypes.string,
