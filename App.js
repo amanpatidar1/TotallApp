@@ -35,12 +35,12 @@ import Dialog, { DialogContent } from "react-native-popup-dialog";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CountDown from "react-native-countdown-component";
 let deviceWidth = Dimensions.get("window").width;
-const BASEURL = "http://e.sandeepan.in";
+const BASEURL = "https://e.sandeepan.in";
 const socket = io.connect(`${BASEURL}:9003`, { transports: ["websocket"] });
 LogBox.ignoreLogs(["Setting a timer"]);
 LogBox.ignoreAllLogs();
 
-function LectureView({ image, title, onLogout }) {
+function LectureView({ image, title }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     fabtext();
@@ -71,14 +71,14 @@ function LectureView({ image, title, onLogout }) {
           <Text style={styles.opinionTxt}>question will appear soon.</Text>
         </Animated.View>
       </View>
-      <View style={styles.logOutVw}>
+      {/* <View style={styles.logOutVw}>
         <TouchableOpacity onPress={() => onLogout()} style={styles.logOutCon}>
           <Image
             source={require("./app/assets/logout-icone.png")}
             style={styles.logOutIcon}
           />
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -110,7 +110,7 @@ function ResultView({ viewResult, onLogout }) {
 function Splash({ navigation }) {
   const animatedValue = new Animated.Value(0);
   useEffect(() => {
-    handleAnimation();
+    // handleAnimation();
     navigateToHome();
   }, []);
   const handleAnimation = () => {
@@ -128,40 +128,15 @@ function Splash({ navigation }) {
   }
   return (
     <View style={styles.splashVw}>
-      <Animated.Image
+      <Image
         resizeMode="contain"
         source={require("./app/assets/Totall.png")}
-        style={[
-          styles.splashImg,
-          {
-            transform: [
-              {
-                translateX: animatedValue.interpolate({
-                  inputRange: [0, 0],
-                  outputRange: [0, 20],
-                }),
-              },
-              {
-                translateY: animatedValue.interpolate({
-                  inputRange: [0, 0],
-                  outputRange: [0, 0],
-                }),
-              },
-              {
-                scaleX: animatedValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 12],
-                }),
-              },
-              {
-                scaleY: animatedValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 12.5],
-                }),
-              },
-            ],
-          },
-        ]}
+        style={[styles.splashImg]}
+      />
+      <Image
+        resizeMode="contain"
+        source={require("./app/assets/Sandeepan.png")}
+        style={[styles.splashImg]}
       />
     </View>
   );
@@ -184,12 +159,14 @@ function Home() {
   const [validation, setValidation] = useState(false);
   const [isConnect, setIsConnect] = useState(false);
   const [answerSnd, setAnswerSnd] = useState(false);
+  const [noAnswer, setNoAnswer] = useState(false);
   const [loading, setIsLoading] = useState(false);
   const [selectAns, setSelectAns] = useState("");
-  // const timer = () => setCount(currentCount - 1);
+  const [countWork, setCountDown] = useState(false);
   const [viewResult, setViewResult] = useState(null);
   const playbackState = usePlaybackState();
   const stateRef = useRef();
+  let setTimer = null;
   stateRef.current = userData;
   const appState = useRef(AppState.currentState);
   const backAction = () => {
@@ -204,7 +181,7 @@ function Home() {
   };
   const _handleAppStateChange = (nextAppState) => {
     if (
-      appState.current.match(/inactive|background/) &&
+      // appState.current.match(/inactive|background/) &&
       nextAppState === "active"
     ) {
       console.log("App has come to the foreground!");
@@ -230,7 +207,7 @@ function Home() {
     return () => {
       AppState.removeEventListener("change", _handleAppStateChange);
     };
-  }, []);
+  }, [AppState]);
 
   useEffect(() => {
     // AsyncStorage.getItem('userDetails').then((token) => {
@@ -277,14 +254,24 @@ function Home() {
   async function handleAnswer(val) {
     setAnswer(val);
   }
-
+  useEffect(() => {}, [showRight, questionsSbmt, answer, response]);
   useEffect(() => {
     socket.on("connect", function () {
       setIsConnect(false);
       console.log("socket  connect");
     });
     socket.on("sendtoMobileClient", async (data) => {
-      console.log("data:sendtoMobileClient ", data);
+      console.log("dataSENDRRR: ", data);
+      // if (setTimer) {
+      //   // alert("STOP JJE")
+      //   // clearTimeout(setTimer);
+      //   setTimer = null;
+      //   console.log("setTimer: ", setTimer);
+      //   setShowRight(false);
+      //   setQuestionsSbmt(false);
+      //   setAnswer("");
+      //   setResponse("");
+      // }
       if (JSON.parse(data).lecture_id) {
         if (
           JSON.parse(data).user_data &&
@@ -297,10 +284,9 @@ function Home() {
           });
           if (JSON.parse(data).lecture_id === stateRef.current.lecture_id) {
             if (quesData.length) {
-              // setResponse('')
               // await togglePlay()
-              setShowRight(false);
               setAnswerSnd(false);
+              setShowRight(false);
               setQuestionsSbmt(false);
               setAnswer("");
               setResponse(JSON.parse(data));
@@ -321,28 +307,43 @@ function Home() {
       responseNull();
     });
   }, []);
+  const handleFinish = () => {
+    setCount(0);
+  };
+  function closeAlert() {
+    setResponse("");
+    setNoAnswer(false);
+  }
   function responseNull() {
-    setTimeout(function () {
-      console.log("SOOOOOOO")
+    setTimer = setTimeout(() => {
       setResponse("");
-    }, 5000);
+      setAnswer("");
+      setShowRight(false);
+      setNoAnswer(false);
+    }, 3000);
   }
   function notAnswer() {
-    if (stateRef.current !== "" && stateRef.current !== null) {
-      if (questionsSbmt === false) {
-        var val = {
-          question_id: response.question_id,
-          userid: stateRef.current.user_id,
-          usertime: currentCount,
-          userAns: "",
-          deviceid: "fgdfgd555",
-          isanswered: 0,
-          isnew: response.isnew,
-          lec_type: response.lec_type,
-          lecture_id: response.lecture_id,
-        };
-        socket.emit("sendtoserver", val);
+    if (response.user_data) {
+      setNoAnswer(true);
+    } else {
+      // if (noAnswer == true) {
+      if (stateRef.current !== "" && stateRef.current !== null) {
+        if (questionsSbmt === false) {
+          var val = {
+            question_id: response.question_id,
+            userid: stateRef.current.user_id,
+            usertime: currentCount,
+            userAns: "",
+            deviceid: "fgdfgd555",
+            isanswered: 0,
+            isnew: response.isnew,
+            lec_type: response.lec_type,
+            lecture_id: response.lecture_id,
+          };
+          socket.emit("sendtoserver", val);
+        }
       }
+      // }
     }
   }
 
@@ -360,9 +361,10 @@ function Home() {
       }
       // togglePause()
     }
-    if (currentCount <= 0) {
-      return;
-    }
+    // if (currentCount <= 0) {
+
+    //   return;
+    // }
   }, [currentCount]);
 
   async function login() {
@@ -425,7 +427,9 @@ function Home() {
         await AsyncStorage.removeItem("userToken");
         await AsyncStorage.removeItem("userDetails");
         setUserData("");
+        setResponse("");
         setIsLoading(false);
+        setAnswer("");
         setViewResult(null);
       } else {
         setIsLoading(false);
@@ -468,6 +472,7 @@ function Home() {
         lecture_id: response.lecture_id,
       };
       socket.emit("sendtoserver", val);
+      setCount(0);
       setQuestionsSbmt(true);
       setAnswerSnd(true);
       answerSendFun();
@@ -477,7 +482,7 @@ function Home() {
       }
       // togglePause()
     } else {
-      showPopupAlert("Please select an option");
+      // showPopupAlert("Please select an option");
     }
   }
   const answerSendFun = () => {
@@ -487,13 +492,20 @@ function Home() {
   };
   useEffect(() => {
     socket.on("viewAllResult", async (data) => {
-      console.log("dataResult: ", data);
       const result = data.filter(
         (item) => item.user_id == stateRef.current.user_id
       );
       if (result.length > 0) {
         setViewResult(result);
         setAnswerSnd(false);
+      }
+    });
+  }, []);
+  useEffect(() => {
+    socket.on("userLogout", (data) => {
+    console.log('dataLOO: ', data);
+      if (data) {
+        logout();
       }
     });
   }, []);
@@ -518,24 +530,40 @@ function Home() {
         <Text style={styles.headerTxt}>TOTALL</Text>
       </View>
       {userData ? (
-        <View
-          style={[
-            styles.netInfoVw,
-            {
-              backgroundColor: netInfo.isConnected == false ? "red" : "#ffffff",
-            },
-          ]}
-        >
-          <Text
+        <View style={{ backgroundColor: "#fff" }}>
+          <View
             style={[
-              styles.netInfoTxt,
-              { color: netInfo.isConnected == false ? "#fff" : "#000000" },
+              styles.netInfoVw,
+              {
+                backgroundColor:
+                  netInfo.isConnected == false ? "red" : "#ffffff",
+              },
             ]}
           >
-            {netInfo.isConnected == false
-              ? `You Are Disconnected`
-              : `You Are Connected`}
-          </Text>
+            <Text
+              style={[
+                styles.netInfoTxt,
+                { color: netInfo.isConnected == false ? "#fff" : "#000000" },
+              ]}
+            >
+              {netInfo.isConnected == false
+                ? `You Are Disconnected`
+                : `You Are Connected`}
+            </Text>
+          </View>
+          {viewResult ? null : (
+            <View style={styles.logOutVw}>
+              <TouchableOpacity
+                onPress={() => handleLogout()}
+                style={styles.logOutCon}
+              >
+                <Image
+                  source={require("./app/assets/logout-icone.png")}
+                  style={styles.logOutIcon}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       ) : null}
       {viewResult ? (
@@ -560,7 +588,8 @@ function Home() {
                         <View style={styles.countTxt}>
                           <CountDown
                             until={currentCount}
-                            onFinish={() => setCount(0)}
+                            running={true}
+                            onFinish={() => handleFinish()}
                             size={13}
                             timeToShow={["S"]}
                             timeLabels={{}}
@@ -731,7 +760,7 @@ function Home() {
                                   key={index}
                                   onPress={() => handleAnswer(item)}
                                   style={{
-                                    width: deviceWidth / 2,
+                                    width: deviceWidth / 2.1,
                                     backgroundColor:
                                       answer === item
                                         ? "green"
@@ -740,6 +769,7 @@ function Home() {
                                         ? "green"
                                         : colors[index],
                                     margin: 3,
+                                    borderRadius: 8,
                                   }}
                                 >
                                   <Text style={styles.answerOptTxt}>
@@ -753,7 +783,12 @@ function Home() {
                         </View>
                         {currentCount === 0 || questionsSbmt == true ? null : (
                           <View style={styles.submitBttn}>
-                            <Button title="Submit" onPress={() => onSubmit()} />
+                            <Button
+                              title="Submit"
+                              style={{ width: "95%", borderRadius: 10 }}
+                              textStyle={{ fontSize: 30 }}
+                              onPress={() => onSubmit()}
+                            />
                           </View>
                         )}
                       </>
@@ -763,14 +798,14 @@ function Home() {
                   <LectureView
                     image={stateRef.current.lecture_img}
                     title={stateRef.current.lecture_name}
-                    onLogout={() => handleLogout()}
+                    // onLogout={() => handleLogout()}
                   />
                 )
               ) : (
                 <LectureView
                   image={stateRef.current.lecture_img}
                   title={stateRef.current.lecture_name}
-                  onLogout={() => handleLogout()}
+                  // onLogout={() => handleLogout()}
                 />
               )
             ) : (
@@ -780,6 +815,11 @@ function Home() {
                     resizeMode="contain"
                     style={styles.logoimg}
                     source={require("./app/assets/Totall.png")}
+                  />
+                  <Image
+                    resizeMode="contain"
+                    style={styles.logoimg}
+                    source={require("./app/assets/Sandeepan.png")}
                   />
                 </View>
                 <View style={styles.loginCon}>
@@ -907,14 +947,37 @@ function Home() {
               height={0.1}
               width={0.5}
             >
-              <DialogContent style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-                <View style={{ marginVertical: 5 }}>
+              <DialogContent style={{ backgroundColor: "#8ac575" }}>
+                <View style={{ marginVertical: 15 }}>
                   <Text style={styles.answerSndTxt}>
                     Your answer is Submitted
                   </Text>
                 </View>
               </DialogContent>
             </Dialog>
+            {/* <Dialog
+              visible={noAnswer}
+              // onTouchOutside={() => {
+              //   set
+              // }}
+              height={0.18}
+              width={0.6}
+            >
+              <DialogContent style={styles.notAnswerVw}>
+                <View style={{ marginVertical: 5 }}>
+                  <Text style={styles.wrongTxt}>This is Wrong</Text>
+                  <Text style={{ textAlign: "center" }}>
+                    You not selected any answer
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => closeAlert()}
+                  style={styles.okBttn}
+                >
+                  <Text style={{ color: "#fff", fontSize: 18 }}>Ok</Text>
+                </TouchableOpacity>
+              </DialogContent>
+            </Dialog> */}
           </View>
         </ScrollView>
       )}
