@@ -317,6 +317,7 @@ function Home() {
   function responseNull() {
     setTimer = setTimeout(() => {
       setResponse("");
+      setAnswer("");
       setShowRight(false);
       setNoAnswer(false);
     }, 3000);
@@ -428,6 +429,7 @@ function Home() {
         setUserData("");
         setResponse("");
         setIsLoading(false);
+        setAnswer("");
         setViewResult(null);
       } else {
         setIsLoading(false);
@@ -501,6 +503,7 @@ function Home() {
   }, []);
   useEffect(() => {
     socket.on("userLogout", (data) => {
+    console.log('dataLOO: ', data);
       if (data) {
         logout();
       }
