@@ -252,6 +252,7 @@ function Home() {
   }
 
   async function handleAnswer(val) {
+    console.log("valANSWE: ", val);
     setAnswer(val);
   }
   useEffect(() => {}, [showRight, questionsSbmt, answer, response]);
@@ -301,6 +302,7 @@ function Home() {
       console.log("socket  disconnect");
     });
     socket.on("showResult", function (val) {
+      console.log("valREWSULT: ", val);
       setShowRight(true);
       // setResponse('')
       // console.log("showResult", val);
@@ -317,6 +319,7 @@ function Home() {
   function responseNull() {
     setTimer = setTimeout(() => {
       setResponse("");
+      setSelectAns("");
       setAnswer("");
       setShowRight(false);
       setNoAnswer(false);
@@ -430,6 +433,7 @@ function Home() {
         setResponse("");
         setIsLoading(false);
         setAnswer("");
+        setSelectAns("");
         setViewResult(null);
       } else {
         setIsLoading(false);
@@ -503,7 +507,7 @@ function Home() {
   }, []);
   useEffect(() => {
     socket.on("userLogout", (data) => {
-    console.log('dataLOO: ', data);
+      console.log("dataLOO: ", data);
       if (data) {
         logout();
       }
